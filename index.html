@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Virtual Storybook Builder</title>
+  <style>
+    /* Basic reset */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    /* Toolbox styles */
+    #toolbox {
+      width: 20%;
+      background: #f4f4f4;
+      padding: 15px;
+      border-right: 1px solid #ddd;
+      overflow-y: auto;
+    }
+    #toolbox h2 {
+      text-align: center;
+      margin-top: 0;
+    }
+    .story-block {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+      cursor: grab;
+      text-align: center;
+      border-radius: 4px;
+    }
+    /* Builder styles */
+    #builder {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    #builder h2 {
+      text-align: center;
+    }
+    .dropzone {
+      border: 2px dashed #aaa;
+      border-radius: 4px;
+      padding: 20px;
+      min-height: 200px;
+      margin-bottom: 20px;
+      transition: background 0.3s;
+    }
+    .dropzone p {
+      text-align: center;
+      color: #888;
+    }
+    .block-item {
+      background: #e0ffe0;
+      border: 1px solid #88cc88;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    #previewBtn {
+      display: block;
+      margin: 0 auto 20px;
+      padding: 10px 20px;
+      border: none;
+      background: #4CAF50;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #preview {
+      background: #f9f9f9;
+      padding: 20px;
+      border-top: 2px solid #ddd;
+      border-radius: 4px;
+    }
+    /* Scrollable chapters area */
+    #scrollArea {
+      margin-top: 40px;
+    }
+    .chapter {
+      margin: 50px 0;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .chapter.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <!-- Story Blocks Toolbox -->
+  <div id="toolbox">
+    <h2>Story Blocks</h2>
+    <div class="story-block" draggable="true" data-content="Once upon a time, in a far away land, there was a brave hero.">
+      Introduction
+    </div>
+    <div class="story-block" draggable="true" data-content="Suddenly, a mysterious challenge emerged that changed everything.">
+      Conflict
+    </div>
+    <div class="story-block" draggable="true" data-content="Through trials and tribulations, the hero rose to the challenge.">
+      Climax
+    </div>
+    <div class="story-block" draggable="true" data-content="In the end, balance was restored, leaving a lasting legacy.">
+      Conclusion
+    </div>
+  </div>
+
+  <!-- Story Builder and Preview Area -->
+  <div id="builder">
+    <h2>Build Your Story</h2>
+    <div class="dropzone" id="dropzone">
+      <p>Drag and drop story blocks here</p>
+    </div>
+    <button id="previewBtn">Show Story Preview</button>
+    <div id="preview">
+      <h2>Story Preview</h2>
+      <div id="storyContent"></div>
+    </div>
+
+    <!-- Scrollable Chapters Area -->
+    <div id="scrollArea">
+      <div class="chapter">Chapter 1: The Beginning</div>
+      <div class="chapter">Chapter 2: The Journey</div>
+      <div class="chapter">Chapter 3: The Climax</div>
+      <div class="chapter">Chapter 4: The Resolution</div>
+    </div>
+  </div>
+
+  <script>
+    // Drag and Drop Functionality
+    const blocks = document.querySelectorAll('.story-block');
+    const dropzone = document.getElementById('dropzone');
+
+    blocks.forEach(block => {
+      block.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', block.getAttribute('data-content'));
+      });
+    });
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.style.background = '#e6f7ff';
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.style.background = '';
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.style.background = '';
+      const content = e.dataTransfer.getData('text/plain');
+      const newBlock = document.createElement('div');
+      newBlock.classList.add('block-item');
+      newBlock.textContent = content;
+      dropzone.appendChild(newBlock);
+    });
+
+    // Story Preview Functionality
+    const previewBtn = document.getElementById('previewBtn');
+    const storyContent = document.getElementById('storyContent');
+
+    previewBtn.addEventListener('click', () => {
+      const addedBlocks = dropzone.querySelectorAll('.block-item');
+      storyContent.innerHTML = ''; // Clear previous preview
+      addedBlocks.forEach(block => {
+        const para = document.createElement('p');
+        para.textContent = block.textContent;
+        storyContent.appendChild(para);
+      });
+    });
+
+    // Scroll Animation for Chapters
+    const chapters = document.querySelectorAll('.chapter');
+    function checkChapters() {
+      const triggerBottom = window.innerHeight * 0.8;
+      chapters.forEach(chapter => {
+        const rect = chapter.getBoundingClientRect();
+        if (rect.top < triggerBottom) {
+          chapter.classList.add('visible');
+        } else {
+          chapter.classList.remove('visible');
+        }
+      });
+    }
+    window.addEventListener('scroll', checkChapters);
+    // Initial check in case some chapters are already in view
+    checkChapters();
+  </script>
+</body>
+</html>
